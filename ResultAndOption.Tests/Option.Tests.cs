@@ -1,5 +1,4 @@
 using FluentAssertions;
-using static System.Option<int>;
 
 namespace ResultAndOption.Tests;
 
@@ -34,49 +33,37 @@ public class OptionTests
         result.Should().Be(42);
     }
 
-    [Fact]
-    public void Option_PatternMatching()
-    {
-        Option<int> option = Option.None;
-        (option is not None).Should().BeFalse();
-        (option is Some(42)).Should().BeFalse();
-    }
+    // [Fact]
+    // public void Option_PatternMatching()
+    // {
+    //     Option<int> option = Option.None;
+    //     (option is not None).Should().BeFalse();
+    //     (option is Some(42)).Should().BeFalse();
+    // }
     
     [Fact]
     public void Option_Switch_Statement()
     {
         var option = Option.Some(42);
-
-        switch (option)
-        {
-            case Some(int value):
-                break;
-            
-            default:
-                throw new InvalidOperationException();
-        }
+        option.Switch(_ => { }, () => throw new InvalidOperationException());
     }
 
     [Fact]
     public void Option_Switch_Expression()
     {
         var option = Option.Some(42);
-        int result = option switch
-        {
-            Some(int value) => value,
-            _ => 0
-        };
-        
+        int result = option.Match( some: x => x, none: () => 0);
         result.Should().Be(42);
         
         option = Option.None;
-        result = option switch
-        {
-            None => 0,
-            _ => -1
-        };
-        
+        result = option.Match( some: x => x, none: () => 0);
         result.Should().Be(0);
+        
+        // return option switch
+        // {
+        //     some value => selector(value)
+        //     none => none
+        // };
     }
 
     [Fact]
@@ -87,5 +74,15 @@ public class OptionTests
                      select x + y;
         
         result.Should().BeSome(3);
+    }
+
+    [Fact]
+    public void Option_ToString()
+    {
+        var option = Option.Some(42);
+        option.ToString().Should().Be("{ Value: 42 }");
+        
+        option = Option.None;
+        option.ToString().Should().Be("None");
     }
 }

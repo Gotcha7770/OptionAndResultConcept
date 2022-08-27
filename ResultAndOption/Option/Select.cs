@@ -4,22 +4,16 @@ public static partial class Options
 {
     public static Option<TResult> Select<T, TResult>(this Option<T> source, Func<T, TResult> selector)
     {
-        return source switch
-        {
-            Option<T>.Some(T value) => selector(value),
-            //some value => selector(value)
-            _ => Option.None
-            //none => none
-        };
+        return source.Match( 
+            some: x => selector(x), 
+            none: () => Option<TResult>.None);
     }
     
     public static Option<TResult> SelectMany<T, TResult>(this Option<T> source, Func<T, Option<TResult>> selector)
     {
-        return source switch
-        {
-            Option<T>.Some(T value) => selector(value),
-            _ => Option.None
-        };
+        return source.Match(
+            some: selector,
+            none: () => Option<TResult>.None);
     }
     
     public static Option<TResult> SelectMany<T1, T2, TResult>(
@@ -27,10 +21,8 @@ public static partial class Options
         Func<T1, Option<T2>> selector,
         Func<T1, T2, TResult> resultSelector)
     {
-        return source switch
-        {
-            Option<T1>.Some(T1 value) => source.SelectMany(selector).Select(x => resultSelector(value, x)),
-            _ => Option.None
-        };
+        return source.Match(
+            some: x => selector(x).Select(y => resultSelector(x, y)),
+            none: () => Option<TResult>.None);
     }
 }
